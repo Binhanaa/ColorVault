@@ -1,0 +1,16 @@
+[package]
+name = "colorvault_core"
+version = "1.0.0"
+edition = "2021"
+authors = ["Mac & Rust/Swift Engineer"]
+
+[lib]
+name = "colorvault_core"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+rusqlite = { version = "0.32", features = ["bundled"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = "0.4"
+dirs = "5.0"

@@ -1,0 +1,17 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Local build outputs & DMG
+build/
+.build/
+*.dmg
+
+# SQLite temporary and journal files
+*.sqlite-wal
+*.sqlite-shm
