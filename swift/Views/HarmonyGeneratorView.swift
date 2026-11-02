@@ -229,11 +229,11 @@ public struct HarmonyGeneratorView: View {
     private var shadesScaleSection: some View {
         VStack(alignment: .leading, spacing: 5) {
             HStack {
-                Text("UI Lightness Scale (50 — 950 Shades):")
+                Text(isAr ? "مقياس تدرجات الواجهات (50 — 950):" : "UI Lightness Scale (50 — 950 Shades):")
                     .font(.system(size: 10.5, weight: .bold))
                     .foregroundColor(.secondary)
                 Spacer()
-                Text("Click any weight to copy")
+                Text(isAr ? "انقر لنسخ أي درجة" : "Click any weight to copy")
                     .font(.system(size: 8.5))
                     .foregroundColor(.secondary)
             }
@@ -262,11 +262,12 @@ public struct HarmonyGeneratorView: View {
                     .help("Weight \(shade.weight): \(shade.color.hex)")
                 }
             }
+            .environment(\.layoutDirection, isAr ? .rightToLeft : .leftToRight)
         }
         .padding(9)
         .background(
             RoundedRectangle(cornerRadius: 9)
-                .fill(Color(NSColor.controlBackgroundColor).opacity(0.45))
+                .fill(Color.primary.opacity(0.04))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 9)

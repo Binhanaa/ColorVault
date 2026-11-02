@@ -23,10 +23,10 @@ public struct HistoryVaultView: View {
         state.selectedLanguage == .arabic ? "المفضلة ⭐ (\(state.permanentFavorites.count))" : "Favorites ⭐ (\(state.permanentFavorites.count))"
     }
     var palettesTitle: String {
-        state.selectedLanguage == .arabic ? "المجموعات المخصصة (\(state.customSavedPalettes.count))" : "Custom Palettes (\(state.customSavedPalettes.count))"
+        state.selectedLanguage == .arabic ? "المجموعات (\(state.customSavedPalettes.count))" : "Palettes (\(state.customSavedPalettes.count))"
     }
     var historyTitle: String {
-        state.selectedLanguage == .arabic ? "سجل الألوان (\(state.historyRecords.count))" : "History Log (\(state.historyRecords.count))"
+        state.selectedLanguage == .arabic ? "السجل (\(state.historyRecords.count))" : "History (\(state.historyRecords.count))"
     }
 
     public var body: some View {
@@ -108,7 +108,7 @@ public struct HistoryVaultView: View {
             }
 
             // Content List
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 if state.vaultTab == 0 {
                     // TAB 0: Permanent Favorites (NEVER DISAPPEARS!)
                     if state.permanentFavorites.isEmpty {
@@ -191,7 +191,9 @@ public struct HistoryVaultView: View {
                     }
                 }
             }
+            .clipped()
         }
+        .clipped()
         .onAppear {
             state.refreshVault()
         }

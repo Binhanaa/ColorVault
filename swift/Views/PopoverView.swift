@@ -66,7 +66,8 @@ public struct PopoverView: View {
                     .zIndex(100)
             }
         }
-        .frame(width: 490, height: 635)
+        .frame(width: 520, height: 645)
+        .clipped()
         .background(VisualEffectBackground())
         .preferredColorScheme(state.selectedTheme.colorScheme)
         .environment(\.layoutDirection, state.selectedLanguage == .arabic ? .rightToLeft : .leftToRight)
@@ -96,7 +97,7 @@ public struct PopoverView: View {
                     Text("ColorVault Pro")
                         .font(.system(size: 13, weight: .heavy, design: .rounded))
                         .foregroundColor(.primary)
-                    Text("v1.2")
+                    Text("v2.0")
                         .font(.system(size: 9, weight: .bold))
                         .foregroundColor(.accentColor)
                         .padding(.horizontal, 4)
@@ -132,7 +133,7 @@ public struct PopoverView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color(NSColor.windowBackgroundColor).opacity(0.75))
+        .background(Color(NSColor.windowBackgroundColor).opacity(0.35))
     }
 
     private var tabBar: some View {
@@ -162,7 +163,7 @@ public struct PopoverView: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+        .background(Color(NSColor.controlBackgroundColor).opacity(0.25))
     }
 }
 
@@ -170,7 +171,7 @@ public struct PopoverView: View {
 struct VisualEffectBackground: NSViewRepresentable {
     func makeNSView(context: Context) -> NSVisualEffectView {
         let view = NSVisualEffectView()
-        view.material = .popover
+        view.material = .hudWindow
         view.blendingMode = .behindWindow
         view.state = .active
         return view

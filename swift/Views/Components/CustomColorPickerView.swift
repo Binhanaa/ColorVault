@@ -78,60 +78,12 @@ public struct CustomColorPickerView: View {
 
             Divider()
 
-            // Hue Slider (0 - 360)
-            VStack(alignment: .leading, spacing: 1) {
-                HStack {
-                    Text("Hue:")
-                        .font(.system(size: 9.5, weight: .medium))
-                    Spacer()
-                    Text("\(Int(state.pickerHue))°")
-                        .font(.system(size: 9.5, design: .monospaced))
-                        .foregroundColor(.secondary)
-                }
-
-                Slider(value: $state.pickerHue, in: 0...360, step: 1)
-                    .onChange(of: state.pickerHue) { _, _ in
-                        commitColor()
-                    }
-            }
-
-            // Saturation Slider (0 - 100)
-            VStack(alignment: .leading, spacing: 1) {
-                HStack {
-                    Text("Saturation:")
-                        .font(.system(size: 9.5, weight: .medium))
-                    Spacer()
-                    Text("\(Int(state.pickerSaturation * 100))%")
-                        .font(.system(size: 9.5, design: .monospaced))
-                        .foregroundColor(.secondary)
-                }
-
-                Slider(value: $state.pickerSaturation, in: 0...1, step: 0.01)
-                    .onChange(of: state.pickerSaturation) { _, _ in
-                        commitColor()
-                    }
-            }
-
-            // Lightness Slider (5 - 95)
-            VStack(alignment: .leading, spacing: 1) {
-                HStack {
-                    Text("Lightness:")
-                        .font(.system(size: 9.5, weight: .medium))
-                    Spacer()
-                    Text("\(Int(state.pickerLightness * 100))%")
-                        .font(.system(size: 9.5, design: .monospaced))
-                        .foregroundColor(.secondary)
-                }
-
-                Slider(value: $state.pickerLightness, in: 0.05...0.95, step: 0.01)
-                    .onChange(of: state.pickerLightness) { _, _ in
-                        commitColor()
-                    }
-            }
+            // Interactive Color Wheel (Replaces separate Hue, Saturation, Lightness sliders!)
+            colorWheelSection
 
             // Quick Preset Swatches
             VStack(alignment: .leading, spacing: 3) {
-                Text("Presets:")
+                Text(state.selectedLanguage == .arabic ? "ألوان سريعة جاهزة:" : "Presets:")
                     .font(.system(size: 8.5, weight: .semibold))
                     .foregroundColor(.secondary)
 
@@ -173,6 +125,87 @@ public struct CustomColorPickerView: View {
                 updateFromHex(newHex)
             }
         }
+    }
+
+    private let wheelDiameter: CGFloat = 132
+
+    private var colorWheelSection: some View {
+        HStack {
+            Spacer()
+            ZStack {
+                // Subtle outer circular ring
+                Circle()
+                    .stroke(Color.primary.opacity(0.15), lineWidth: 1)
+                    .frame(width: wheelDiameter + 2, height: wheelDiameter + 2)
+
+                // Angular Chromatic Spectrum
+                Circle()
+                    .fill(
+                        AngularGradient(
+                            gradient: Gradient(colors: [
+                                .red, .yellow, .green, .cyan, .blue, .purple, .red
+                            ]),
+                            center: .center
+                        )
+                    )
+                    .frame(width: wheelDiameter, height: wheelDiameter)
+
+                // Radial Desaturation Overlay (Center is white, perimeter is pure saturated hue)
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [.white, .clear]),
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: wheelDiameter / 2
+                        )
+                    )
+                    .frame(width: wheelDiameter, height: wheelDiameter)
+
+                // Thumb Selector
+                let radius = wheelDiameter / 2
+                let rad = state.pickerHue * .pi / 180.0
+                let dist = max(0, min(radius, CGFloat(state.pickerSaturation) * radius))
+                let thumbX = dist * cos(CGFloat(rad))
+                let thumbY = dist * sin(CGFloat(rad))
+
+                Circle()
+                    .fill(currentColor)
+                    .frame(width: 15, height: 15)
+                    .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                    .shadow(color: Color.black.opacity(0.4), radius: 2.5, x: 0, y: 1)
+                    .offset(x: thumbX, y: thumbY)
+                    .allowsHitTesting(false)
+            }
+            .contentShape(Circle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        handleWheelDrag(at: value.location)
+                    }
+            )
+            Spacer()
+        }
+        .padding(.vertical, 2)
+    }
+
+    private func handleWheelDrag(at location: CGPoint) {
+        let radius = wheelDiameter / 2
+        let dx = location.x - radius
+        let dy = location.y - radius
+        let distance = sqrt(dx * dx + dy * dy)
+        let clampedDist = min(distance, radius)
+        let saturation = Double(clampedDist / radius)
+
+        var angle = atan2(dy, dx) * 180.0 / .pi
+        if angle < 0 {
+            angle += 360.0
+        }
+
+        state.pickerHue = angle
+        state.pickerSaturation = max(0.02, min(1.0, saturation))
+        state.pickerLightness = 0.50
+        commitColor()
     }
 
     private func commitColor() {

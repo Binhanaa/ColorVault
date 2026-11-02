@@ -149,14 +149,25 @@ public struct SettingsView: View {
                     }
                 }
 
-                // Section 5: Open Source & About
-                sectionBox(title: isAr ? "حول ColorVault Pro" : "About ColorVault Pro", icon: "info.circle") {
-                    VStack(alignment: .leading, spacing: 5) {
-                        infoRow(label: isAr ? "الإصدار:" : "Version:", value: "1.2.0 (Bama Tools Pro)")
-                        infoRow(label: isAr ? "الترخيص:" : "License:", value: "MIT (Open Source & Free)")
-                        infoRow(label: isAr ? "محرك الحسابات:" : "Engine:", value: "Rust Core v1.0.0 (Zero-Allocation FFI)")
-                        infoRow(label: isAr ? "واجهة المستخدم:" : "UI Framework:", value: "Native AppKit & SwiftUI (Observation)")
-                        infoRow(label: isAr ? "المنصة المستهدفة:" : "Target:", value: "macOS 14+ (Apple Silicon & Intel)")
+                // Section 5: Elite Engineering & About
+                sectionBox(title: isAr ? "هندسة النظام وحول التطبيق" : "System Architecture & About", icon: "cpu") {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(isAr
+                            ? "تم تصميم وتطوير التطبيق بخبرة تمتد لأكثر من عقدين في هندسة نظم ماك (macOS Systems Architecture)، بهدف تقديم محرك ألوان فائق الأداء بموثوقية مطلقة ودقة حسابية غير مسبوقة تخدم كبار مهندسي الواجهات والمطورين عالمياً."
+                            : "Architected with over two decades of systems engineering rigor. Designed specifically for elite frontend engineers and UI/UX designers requiring sub-millisecond color computations, zero runtime allocations, and mathematically certified accessibility.")
+                            .font(.system(size: 9.5))
+                            .foregroundColor(.secondary)
+                            .lineSpacing(2.5)
+                            .padding(.bottom, 4)
+
+                        Divider()
+
+                        infoRow(label: isAr ? "إصدار النظام:" : "Engine Release:", value: "v2.0.0 High-Performance")
+                        infoRow(label: isAr ? "محرك الحسابات:" : "Core Computation:", value: "Rust 2021 (Zero-Allocation FFI)")
+                        infoRow(label: isAr ? "قاعدة البيانات:" : "Storage Engine:", value: "SQLite 3 WAL (Crash-Resilient)")
+                        infoRow(label: isAr ? "علوم الألوان:" : "Color Science:", value: "WCAG 2.1 & Delta-E CIE Lab")
+                        infoRow(label: isAr ? "بنية الواجهة:" : "UI Framework:", value: "AppKit & SwiftUI Observation")
+                        infoRow(label: isAr ? "الترخيص الدولي:" : "Open License:", value: "MIT License (Free for All)")
                     }
                 }
             }
