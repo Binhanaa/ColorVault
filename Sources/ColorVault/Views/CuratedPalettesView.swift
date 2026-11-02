@@ -1,77 +1,106 @@
 import SwiftUI
 
 public struct CuratedPalettesView: View {
-    public var onSelectAsBase: (ColorItem) -> Void
-    public var onToast: (String, String?) -> Void
+    @Bindable var state: AppState = AppState.shared
 
-    @State private var palettes: [CuratedPalette] = []
-    @State private var filterCategory: String = "all"
-    @State private var searchText: String = ""
+    var currentCategories: [(id: String, title: String, count: String)] {
+        if state.selectedLanguage == .arabic {
+            return [
+                ("all", "الكل", "15"),
+                ("duo", "ثنائيات (2)", "5"),
+                ("trio", "ثلاثيات (3)", "5"),
+                ("tetrad", "رباعيات (4)", "5")
+            ]
+        } else {
+            return [
+                ("all", "All Sets", "15"),
+                ("duo", "Duos (2)", "5"),
+                ("trio", "Trios (3)", "5"),
+                ("tetrad", "Tetrads (4)", "5")
+            ]
+        }
+    }
+
+    public init(state: AppState = AppState.shared) {
+        self.state = state
+    }
 
     public var filteredPalettes: [CuratedPalette] {
-        palettes.filter { p in
-            let matchesCategory = filterCategory == "all" || p.category == filterCategory
-            let matchesSearch = searchText.isEmpty ||
-                p.title.localizedCaseInsensitiveContains(searchText) ||
-                p.title_ar.localizedCaseInsensitiveContains(searchText) ||
-                p.tag.localizedCaseInsensitiveContains(searchText)
-            return matchesCategory && matchesSearch
+        if state.curatedCategory == "all" {
+            return state.curatedPalettes
         }
+        return state.curatedPalettes.filter { $0.category == state.curatedCategory }
     }
 
     public var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                // Search bar & Filter
-                HStack(spacing: 8) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.secondary)
-                        TextField("بحث في المجموعات والأنماط...", text: $searchText)
-                            .textFieldStyle(PlainTextInputStyle())
+            VStack(alignment: .leading, spacing: 12) {
+                // Symmetrical Full-Width Category Filter Bar (No cramped search bar!)
+                HStack(spacing: 6) {
+                    ForEach(currentCategories, id: \.id) { cat in
+                        Button(action: {
+                            state.curatedCategory = cat.id
+                        }) {
+                            HStack(spacing: 4) {
+                                Text(cat.title)
+                                    .font(.system(size: 10.5, weight: state.curatedCategory == cat.id ? .bold : .medium))
+                                Text(cat.count)
+                                    .font(.system(size: 8.5, weight: .bold))
+                                    .foregroundColor(state.curatedCategory == cat.id ? .white.opacity(0.85) : .secondary)
+                                    .padding(.horizontal, 3.5)
+                                    .padding(.vertical, 1)
+                                    .background(Capsule().fill(state.curatedCategory == cat.id ? Color.white.opacity(0.2) : Color.primary.opacity(0.06)))
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(state.curatedCategory == cat.id ? Color.accentColor : Color.white.opacity(0.06))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(state.curatedCategory == cat.id ? Color.accentColor.opacity(0.8) : Color.white.opacity(0.08), lineWidth: 0.8)
+                            )
+                            .foregroundColor(state.curatedCategory == cat.id ? .white : .primary)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .focusable(false)
                     }
-                    .padding(6)
-                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.06)))
-
-                    // Category Filter Picker
-                    Picker("", selection: $filterCategory) {
-                        Text("الكل").tag("all")
-                        Text("ثنائيات (2)").tag("duo")
-                        Text("ثلاثيات (3)").tag("trio")
-                        Text("رباعيات (4)").tag("tetrad")
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .frame(width: 200)
                 }
+                .padding(.horizontal, 1)
 
                 // Palettes List
                 ForEach(filteredPalettes) { pal in
                     PaletteRow(
-                        title: pal.title_ar,
-                        subtitle: "\(pal.title) • \(pal.tag)",
+                        title: pal.title,
+                        subtitle: "\(pal.tag) • \(pal.title_ar)",
                         colors: pal.colors,
-                        onSelectAsBase: onSelectAsBase,
-                        onToast: onToast
+                        onSelectAsBase: { item in
+                            state.setBaseHex(item.hex)
+                            state.selectedTab = 0
+                            state.showCheckmarkToast(text: "Set base color: \(item.hex)", hex: item.hex)
+                        }
                     )
                 }
 
                 if filteredPalettes.isEmpty {
-                    VStack(spacing: 8) {
+                    VStack(spacing: 10) {
                         Image(systemName: "paintpalette")
-                            .font(.system(size: 32))
+                            .font(.system(size: 28))
                             .foregroundColor(.secondary)
-                        Text("لا توجد مجموعات تطابق البحث")
-                            .font(.system(size: 13, weight: .medium))
+                        Text("No palettes found in this category")
+                            .font(.system(size: 11, weight: .medium))
                             .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(40)
+                    .padding(36)
                 }
             }
-            .padding(14)
+            .padding(13)
         }
         .onAppear {
-            palettes = RustBridge.shared.getCuratedPalettes()
+            state.refreshCurated()
         }
     }
 }

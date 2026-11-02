@@ -14,21 +14,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusItem.button {
-            // Palette / Prism Status Icon
-            let config = NSImage.SymbolConfiguration(pointSize: 15, weight: .medium)
-            if let image = NSImage(systemSymbolName: "paintpalette.fill", accessibilityDescription: "ColorVault")?.withSymbolConfiguration(config) {
-                image.isTemplate = true
-                button.image = image
-            } else {
-                button.title = "🎨"
+            // Load unified fixed app icon
+            var menuIcon: NSImage?
+            if let path = Bundle.main.path(forResource: "MenuBarIcon", ofType: "png") {
+                menuIcon = NSImage(contentsOfFile: path)
+            } else if let path = Bundle.main.path(forResource: "MenuBarIcon@2x", ofType: "png") {
+                menuIcon = NSImage(contentsOfFile: path)
             }
+
+            if let img = menuIcon {
+                img.isTemplate = true
+                img.size = NSSize(width: 18, height: 18)
+                button.image = img
+            } else {
+                let fallback = NSImage(systemSymbolName: "paintpalette.fill", accessibilityDescription: "ColorVault Pro")
+                fallback?.isTemplate = true
+                button.image = fallback
+            }
+
             button.action = #selector(togglePopover(_:))
             button.target = self
         }
 
         // Setup the Popover
         popover = NSPopover()
-        popover.contentSize = NSSize(width: 480, height: 620)
+        popover.contentSize = NSSize(width: 520, height: 645)
         popover.behavior = .transient
         popover.animates = true
         popover.contentViewController = NSHostingController(rootView: PopoverView())
@@ -49,6 +59,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
+            // Clear any default initial button focus so there's zero blue highlight
+            popover.contentViewController?.view.window?.makeFirstResponder(nil)
         }
     }
 }

@@ -6,64 +6,65 @@ public struct PaletteRow: View {
     public let subtitle: String
     public let colors: [ColorItem]
     public var onSelectAsBase: ((ColorItem) -> Void)?
-    public var onToast: ((String, String?) -> Void)?
 
     public init(
         title: String,
         subtitle: String,
         colors: [ColorItem],
-        onSelectAsBase: ((ColorItem) -> Void)? = nil,
-        onToast: ((String, String?) -> Void)? = nil
+        onSelectAsBase: ((ColorItem) -> Void)? = nil
     ) {
         self.title = title
         self.subtitle = subtitle
         self.colors = colors
         self.onSelectAsBase = onSelectAsBase
-        self.onToast = onToast
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 7) {
             // Header with titles and quick copy-all
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text(title)
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: 12, weight: .bold))
                         .foregroundColor(.primary)
                     Text(subtitle)
-                        .font(.system(size: 11))
+                        .font(.system(size: 9.5))
                         .foregroundColor(.secondary)
+                        .lineLimit(1)
                 }
 
                 Spacer()
 
-                HStack(spacing: 8) {
+                HStack(spacing: 5) {
                     Button(action: savePalette) {
                         Image(systemName: "bookmark.fill")
-                            .font(.system(size: 11))
+                            .font(.system(size: 9.5))
                             .foregroundColor(.secondary)
-                            .padding(4)
+                            .padding(4.5)
                             .background(Circle().fill(Color.primary.opacity(0.06)))
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .help("حفظ هذه المجموعة في الخزنة")
+                    .focusable(false)
+                    .help("Save to Vault")
 
                     Button(action: copyAllHexes) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: 3) {
                             Image(systemName: "square.on.square")
-                                .font(.system(size: 10))
-                            Text("نسخ الكل")
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 8.5))
+                            Text("Copy All")
+                                .font(.system(size: 9.5, weight: .semibold))
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3.5)
                         .background(
                             Capsule().fill(Color.primary.opacity(0.08))
                         )
                         .foregroundColor(.primary)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .help("نسخ جميع أكواد الألوان مفصولة بفواصل")
+                    .focusable(false)
+                    .help("Copy all hex values separated by comma")
                 }
             }
 
@@ -76,34 +77,33 @@ public struct PaletteRow: View {
                             .frame(width: geo.size.width / CGFloat(max(1, colors.count)))
                     }
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 0.8)
                 )
             }
-            .frame(height: 24)
+            .frame(height: 20)
 
             // Individual Swatches Grid
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: min(colors.count, 4)), spacing: 8) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 7), count: min(colors.count, 4)), spacing: 7) {
                 ForEach(colors) { c in
                     ColorCard(
                         color: c,
                         isCompact: true,
-                        onSelectAsBase: onSelectAsBase,
-                        onToast: onToast
+                        onSelectAsBase: onSelectAsBase
                     )
                 }
             }
         }
-        .padding(12)
+        .padding(10)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(NSColor.controlBackgroundColor).opacity(0.6))
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(NSColor.controlBackgroundColor).opacity(0.65))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 0.8)
         )
     }
 
@@ -112,13 +112,17 @@ public struct PaletteRow: View {
         let pb = NSPasteboard.general
         pb.clearContents()
         pb.setString(hexString, forType: .string)
-        NSSound.beep()
-        onToast?("تم نسخ جميع الألوان: \(hexString)", colors.first?.hex)
+
+        if AppState.shared.enableSound {
+            NSSound.beep()
+        }
+        AppState.shared.showCheckmarkToast(text: "Copied palette: \(hexString)", hex: colors.first?.hex)
     }
 
     private func savePalette() {
         let cat = "\(colors.count)-colors"
         _ = RustBridge.shared.savePalette(title: title, category: cat, colors: colors)
-        onToast?("تم حفظ المجموعة بنجاح في قاعدة البيانات", colors.first?.hex)
+        AppState.shared.refreshVault()
+        AppState.shared.showCheckmarkToast(text: "Saved palette to Vault: \(title)", hex: colors.first?.hex)
     }
 }

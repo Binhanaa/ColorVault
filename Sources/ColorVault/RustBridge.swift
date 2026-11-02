@@ -13,6 +13,12 @@ func cv_generate_harmonies(_ hex: UnsafePointer<CChar>) -> UnsafeMutablePointer<
 @_silgen_name("cv_evaluate_pair")
 func cv_evaluate_pair(_ hex1: UnsafePointer<CChar>, _ hex2: UnsafePointer<CChar>) -> UnsafeMutablePointer<CChar>
 
+@_silgen_name("cv_get_shades")
+func cv_get_shades(_ hex: UnsafePointer<CChar>) -> UnsafeMutablePointer<CChar>
+
+@_silgen_name("cv_simulate_colorblind")
+func cv_simulate_colorblind(_ hex: UnsafePointer<CChar>) -> UnsafeMutablePointer<CChar>
+
 @_silgen_name("cv_get_curated_palettes")
 func cv_get_curated_palettes() -> UnsafeMutablePointer<CChar>
 
@@ -20,10 +26,16 @@ func cv_get_curated_palettes() -> UnsafeMutablePointer<CChar>
 func cv_get_history(_ limit: Int32) -> UnsafeMutablePointer<CChar>
 
 @_silgen_name("cv_toggle_favorite")
-func cv_toggle_favorite(_ hex: UnsafePointer<CChar>) -> Int32
+func cv_toggle_favorite(_ hex: UnsafePointer<CChar>, _ name: UnsafePointer<CChar>) -> Int32
+
+@_silgen_name("cv_get_favorites")
+func cv_get_favorites() -> UnsafeMutablePointer<CChar>
 
 @_silgen_name("cv_save_palette")
 func cv_save_palette(_ title: UnsafePointer<CChar>, _ category: UnsafePointer<CChar>, _ colorsJson: UnsafePointer<CChar>) -> Int64
+
+@_silgen_name("cv_delete_saved_palette")
+func cv_delete_saved_palette(_ id: Int64) -> Int32
 
 @_silgen_name("cv_get_saved_palettes")
 func cv_get_saved_palettes() -> UnsafeMutablePointer<CChar>
@@ -65,18 +77,33 @@ public final class RustBridge {
         return parseAndFree(ptr)
     }
 
+    public func getShades(hex: String) -> [ShadeItem] {
+        let ptr = cv_get_shades(hex)
+        return parseAndFree(ptr) ?? []
+    }
+
+    public func simulateColorBlind(hex: String) -> ColorBlindSimulation? {
+        let ptr = cv_simulate_colorblind(hex)
+        return parseAndFree(ptr)
+    }
+
     public func getCuratedPalettes() -> [CuratedPalette] {
         let ptr = cv_get_curated_palettes()
         return parseAndFree(ptr) ?? []
     }
 
-    public func getHistory(limit: Int = 50) -> [HistoryRecord] {
+    public func getHistory(limit: Int = 100) -> [HistoryRecord] {
         let ptr = cv_get_history(Int32(limit))
         return parseAndFree(ptr) ?? []
     }
 
-    public func toggleFavorite(hex: String) -> Bool {
-        return cv_toggle_favorite(hex) == 1
+    public func toggleFavorite(hex: String, name: String = "") -> Bool {
+        return cv_toggle_favorite(hex, name) == 1
+    }
+
+    public func getFavorites() -> [FavoriteRecord] {
+        let ptr = cv_get_favorites()
+        return parseAndFree(ptr) ?? []
     }
 
     public func savePalette(title: String, category: String, colors: [ColorItem]) -> Int64 {
@@ -85,6 +112,10 @@ public final class RustBridge {
             return -1
         }
         return cv_save_palette(title, category, jsonStr)
+    }
+
+    public func deleteSavedPalette(id: Int64) {
+        _ = cv_delete_saved_palette(id)
     }
 
     public func getSavedPalettes() -> [SavedPaletteRecord] {

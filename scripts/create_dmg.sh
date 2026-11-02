@@ -8,7 +8,7 @@ APP_NAME="ColorVault"
 APP_BUNDLE="$DIR/build/$APP_NAME.app"
 DMG_NAME="ColorVault.dmg"
 OUTPUT_DMG="$DIR/build/$DMG_NAME"
-DESKTOP_DMG="/Users/abdallah/Desktop/$DMG_NAME"
+DESKTOP_DMG="$HOME/Desktop/$DMG_NAME"
 
 if [ ! -d "$APP_BUNDLE" ]; then
     echo "App bundle not found! Running build first..."
@@ -37,13 +37,15 @@ hdiutil create \
     -format UDZO \
     "$OUTPUT_DMG"
 
-echo "==> 5. Copying DMG to Desktop..."
-cp "$OUTPUT_DMG" "$DESKTOP_DMG"
+echo "==> 5. Outputting DMG..."
+if [ -d "$HOME/Desktop" ]; then
+    cp "$OUTPUT_DMG" "$DESKTOP_DMG"
+    echo "    - Desktop: $DESKTOP_DMG"
+    ls -lh "$DESKTOP_DMG"
+fi
 
 echo "==> 6. Cleaning up staging..."
 rm -rf "$STAGING_DIR"
 
-echo "==> SUCCESS! DMG generated at:"
-echo "    - Project: $OUTPUT_DMG"
-echo "    - Desktop: $DESKTOP_DMG"
-ls -lh "$DESKTOP_DMG"
+echo "==> SUCCESS! DMG generated at: $OUTPUT_DMG"
+ls -lh "$OUTPUT_DMG"

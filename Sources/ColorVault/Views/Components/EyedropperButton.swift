@@ -2,44 +2,45 @@ import SwiftUI
 import AppKit
 
 public struct EyedropperButton: View {
-    public var onColorPicked: (String) -> Void
-    public var onToast: ((String, String?) -> Void)?
+    @Bindable var state: AppState = AppState.shared
+    public var onColorPicked: ((String) -> Void)?
 
-    @State private var isSampling: Bool = false
-
-    public init(onColorPicked: @escaping (String) -> Void, onToast: ((String, String?) -> Void)? = nil) {
+    public init(state: AppState = AppState.shared, onColorPicked: ((String) -> Void)? = nil) {
+        self.state = state
         self.onColorPicked = onColorPicked
-        self.onToast = onToast
     }
 
     public var body: some View {
         Button(action: pickScreenColor) {
-            HStack(spacing: 6) {
+            HStack(spacing: 4.5) {
                 Image(systemName: "eyedropper.halffull")
-                    .font(.system(size: 13, weight: .bold))
-                Text("القطارة")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 10, weight: .semibold))
+                Text(state.selectedLanguage == .arabic ? "القطارة" : "Pick Color")
+                    .font(.system(size: 10.5, weight: .medium))
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 4.5)
             .background(
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.accentColor.opacity(0.15))
+                    .fill(Color.primary.opacity(0.08))
             )
-            .foregroundColor(.accentColor)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(Color.primary.opacity(0.12), lineWidth: 0.8)
+            )
+            .foregroundColor(.primary)
+            .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
-        .help("التقط أي لون من الشاشة مباشرة وحفظه تلقائياً")
+        .focusable(false)
+        .focusEffectDisabled()
+        .help(state.selectedLanguage == .arabic ? "سحب لون من أي مكان على الشاشة" : "Sample color from any screen pixel")
     }
 
     private func pickScreenColor() {
-        guard !isSampling else { return }
-        isSampling = true
-
         let sampler = NSColorSampler()
         sampler.show { selectedColor in
             DispatchQueue.main.async {
-                self.isSampling = false
                 guard let color = selectedColor?.usingColorSpace(.sRGB) else { return }
 
                 let r = Int(round(color.redComponent * 255))
@@ -47,11 +48,9 @@ public struct EyedropperButton: View {
                 let b = Int(round(color.blueComponent * 255))
                 let hex = String(format: "#%02X%02X%02X", r, g, b)
 
-                // Save automatically in Rust SQLite
-                _ = RustBridge.shared.recordColor(hex: hex, source: "eyedropper")
-
-                self.onColorPicked(hex)
-                self.onToast?("تم التقاط وحفظ اللون \(hex)", hex)
+                AppState.shared.setBaseHex(hex)
+                self.onColorPicked?(hex)
+                AppState.shared.showCheckmarkToast(text: "Sampled color: \(hex)", hex: hex)
             }
         }
     }
