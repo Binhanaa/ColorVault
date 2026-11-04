@@ -6,16 +6,24 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Engine: SQLite](https://img.shields.io/badge/Database-SQLite_WAL-003B57.svg?logo=sqlite)](https://sqlite.org)
 
-**ColorVault Pro** is an elite, high-performance native macOS menu bar application engineered in **Rust** and **Swift/SwiftUI**. It serves as a unified color storage vault, real-time harmony engine, contrast auditor, and palette workstation built specifically for frontend developers, mobile engineers, and UI/UX designers.
+**ColorVault Pro** is a native macOS menu bar app for people who pick, store, and ship colors. It keeps a library of colors and palettes, builds harmonies, checks contrast, and copies values for Swift, CSS, Tailwind, Flutter, and Android. The interface is SwiftUI. Color math and the database run in Rust.
 
-Architected with over two decades of systems engineering rigor, ColorVault Pro delivers sub-millisecond execution, zero runtime memory leaks, and certified WCAG 2.1 color science.
+Colors, favorites, and palettes stay in a SQLite file on this Mac. Contrast uses the WCAG 2.1 ratios, 4.5:1 for AA and 7:1 for AAA. There is no account, and the library is not uploaded.
+
+## Install
+
+macOS 14 or later.
+
+1. Download [ColorVault.dmg](https://github.com/Binhanaa/ColorVault/releases/latest/download/ColorVault.dmg) from [Releases](https://github.com/Binhanaa/ColorVault/releases).
+2. Open the disk image and drag **ColorVault** to **Applications**.
+3. Open ColorVault. It lives in the menu bar.
 
 ---
 
 ## ✨ Key Features
 
 - **Native Menu Bar Extra (`LSUIElement = true`)**:
-  - Instant access from the macOS menu bar at zero cost to dock space or CPU cycles.
+  - Opens from the menu bar. The app does not take a Dock icon.
   - Translucent frosted-glass backdrop (`NSVisualEffectView`) blending seamlessly into macOS Sonoma & Sequoia.
 - **Interactive Chromatic Color Wheel**:
   - Direct 360° circular hue & saturation wheel with live real-time drag-and-pick response.
@@ -28,7 +36,7 @@ Architected with over two decades of systems engineering rigor, ColorVault Pro d
   - Custom palette studio with custom collection naming, tags, and multi-color builds.
 - **Smart Color Harmonies (Duos, Trios, Tetrads)**:
   - Real-time mathematical generation of complementary, analogous, triadic, split-complementary, and tetradic chords.
-  - Precision color wheel math executed directly in Rust via zero-allocation C FFI.
+  - Harmony math runs in the Rust library and is called from Swift.
 - **Deep Contrast & Accessibility Auditor**:
   - Exact WCAG 2.1 contrast ratio calculations (`4.5:1` AA / `7.0:1` AAA ratings).
   - Live side-by-side simulated UI previews (Buttons, Cards, Text Legibility).
@@ -85,7 +93,7 @@ Architected with over two decades of systems engineering rigor, ColorVault Pro d
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/ColorVault.git
+   git clone https://github.com/Binhanaa/ColorVault.git
    cd ColorVault
    ```
 
@@ -106,7 +114,7 @@ Architected with over two decades of systems engineering rigor, ColorVault Pro d
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/your-username/ColorVault/issues).
+Contributions, issues, and feature requests are welcome. Please use the [issues page](https://github.com/Binhanaa/ColorVault/issues).
 
 1. Fork the Project.
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
